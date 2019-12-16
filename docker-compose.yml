@@ -23,6 +23,12 @@ services:
       AUTH_URL: 'auth-ms'
       AUTH_PORT: '3000'
       AUTH_ENTRY: ''
+      CHAT_URL: 'chat-ms'
+      CHAT_PORT: '8080'
+      CHAT_ENTRY: 'messages'
+      MULTIMEDIA_URL: 'multimedia-ms'
+      MULTIMEDIA_PORT: '8081'
+      MULTIMEDIA_ENTRY: 'entries'
   users-db:
     image: mysql:5.7
     environment:
@@ -65,25 +71,44 @@ services:
       PORT: '8000'
     depends_on:
       - pugchat-state-db
+  chat-mongo:
+    container_name: hk-mongodb
+    image: mongo
+    command: --port 27018
+  chat-ms:
+    build: ./chat-ms/
+    environment: 
+      PORT: '8080'
+    depends_on:
+      - chat-mongo
+  multimedia-ms:
+    build: ./multimedia-ms/
+    command: sh -c "./wait-for-it.sh db:3306;fresh;"
+    environment: 
+      PORT: '8081'
+    depends_on:
+      - multimedia-db
+  multimedia-db:
+    image: mysql:8.0
+    volumes:
+      - /db/mysql_init:/docker-entrypoint-initdb.d
+      - /db/mysql_data:/var/lib/mysql
+      - /db/config/charset.cnf:/etc/mysql/conf.d/charset.cnf
+    environment:
+      MYSQL_DATABASE: pugchat_multimedia_db
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
   auth-ms:
     build: ./auth-ms/
     command: node server.js
-    ports:
-      - "3000:3000"
-    volumes:
-      - .:/usr/src/app
-      - /usr/src/app/node_modules
+    environment: 
+      PORT: '3000'
     depends_on:
       - "mongo"
       - "sa-ldap"
   mongo:
     image: "mongo"
-    ports:
-      - "27017:27017"
-  adminmongo:
-    image: "mrvautin/adminmongo"
-    ports:
-      - "1234:1234"
   sa-ldap:
     image: osixia/openldap:1.1.8
     environment:
