@@ -25,7 +25,7 @@ services:
       AUTH_ENTRY: ''
       CHAT_URL: 'chat-ms'
       CHAT_PORT: '8080'
-      CHAT_ENTRY: 'messages'
+      CHAT_ENTRY: 'messages/'
       MULTIMEDIA_URL: 'multimedia-ms'
       MULTIMEDIA_PORT: '8081'
       MULTIMEDIA_ENTRY: 'entries'
